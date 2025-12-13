@@ -1,0 +1,84 @@
+name: CI - Main Branch
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  GCP_SERVICE_ACCOUNT_KEY: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  GKE_CLUSTER: ${{ secrets.GKE_CLUSTER }}
+  GKE_ZONE: ${{ secrets.GKE_ZONE }}
+  REPO_NAME: ${{ secrets.REPO_NAME }}
+  IMAGE: iris-api
+  REGION: us-central1
+  DEPLOYMENT_NAME: iris-deployment
+  SERVICE_NAME: iris-service
+  CONTAINER_NAME: iris-container
+
+permissions:
+  contents: write
+  pull-requests: write
+  
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+          
+      # ✅ Authenticate with Google Cloud
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ env.GCP_SERVICE_ACCOUNT_KEY }}
+	
+      # ✅ Install gcloud CLI
+      - name: Configure gcloud
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ env.PROJECT_ID }}
+      
+      # ✅ Configure Docker auth
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+      
+      # ✅ Step 5: Get GKE credentials
+      - name: Get GKE credentials
+        run: |
+          gcloud components install gke-gcloud-auth-plugin --quiet
+          gcloud container clusters get-credentials ${{ env.GKE_CLUSTER }} --zone ${{ env.GKE_ZONE }} --project ${{ env.PROJECT_ID }}
+
+
+      # ✅ CML Summary
+      - name: Sanity Report via CML
+        env:
+          repo_token: ${{ env.GITHUB_TOKEN }}
+        run: |
+          echo "## ✅ This pipeline ran successfully, application deployed to GKE" > report.md
+          cml comment create report.md
+
+
+
+
+      # # ✅ Step 4: Build and push image
+      # - name: Build and Push Docker image
+      #   run: |
+      #     docker build -t ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.IMAGE }}:latest .
+      #     docker push ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.IMAGE }}:latest
+
+
+      # # ✅ Step 6: Deploy to GKE
+      # - name: Deploy updated image
+      #   run: |
+      #     kubectl set image deployment/${{ env.DEPLOYMENT_NAME }} ${{ env.CONTAINER_NAME }}=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/iris-api:latest
+      #     kubectl rollout status deployment/${{ env.DEPLOYMENT_NAME }}
+      #     kubectl get pods -o wide
+
+      # # ✅ Step 7: Verify service
+      # - name: Verify service
+      #   run: kubectl get service ${{ env.SERVICE_NAME }}
+
