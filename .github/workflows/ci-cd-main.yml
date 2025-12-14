@@ -12,13 +12,19 @@ env:
   PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
   GKE_CLUSTER: ${{ vars.GKE_CLUSTER }}
   GKE_ZONE: ${{ vars.GKE_ZONE }}
+  
   REPO_NAME: ${{ vars.REPO_NAME }}
   IMAGE: test-api
+  
   REGION: us-east1
   DEPLOYMENT_NAME: test-deployment
   SERVICE_NAME: test-service
   CONTAINER_NAME: test-container
 
+  MLFLOW_TRACKING_URI: ${{ secrets.MLFLOW_TRACKING_URI }}
+  MODEL_NAME: base-model
+  MODEL_STAGE: Production
+  
 permissions:
   contents: write
   pull-requests: write
@@ -63,12 +69,18 @@ jobs:
       - name: Deploy updated image
         run: |
           kubectl apply -f k8s/
+          # kubectl set env deployment/${{ env.DEPLOYMENT_NAME }} \
+          #   MLFLOW_TRACKING_URI="${{ env.MLFLOW_TRACKING_URI }}" \
+          #   MODEL_NAME="${{ env.MODEL_NAME }}" \
+          #   MODEL_STAGE="${{ env.MODEL_STAGE }}"
+            
           kubectl rollout status deployment/${{ env.DEPLOYMENT_NAME }}
-          kubectl get pods -o wide
 
       # ✅ Step 7: Verify service
       - name: Verify service
-        run: kubectl get service ${{ env.SERVICE_NAME }}
+        run: |
+          kubectl get service ${{ env.SERVICE_NAME }} > reoport.md
+          kubectl get pods -o wide >> report.md
       
       # ✅ CML Summary
       - name: Install CML
@@ -79,7 +91,7 @@ jobs:
         env:
           repo_token: ${{ env.GITHUB_TOKEN }}
         run: |
-          echo "## ✅ This pipeline ran successfully, application deployed to GKE" > report.md
+          echo "## ✅ This pipeline ran successfully, application deployed to GKE" >> report.md
           cml comment create report.md
 
 
