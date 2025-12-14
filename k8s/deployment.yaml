@@ -12,7 +12,7 @@ spec:
       labels:
         app: test-api
     spec:
-      serviceAccountName: telemetry-access  # See below
+      serviceAccountName: telemetry-ksa  # See below
       containers:
       - name: test-container
         image: us-central1-docker.pkg.dev/dulcet-bastion-452612-v4/my-repo/demo_log:latest
