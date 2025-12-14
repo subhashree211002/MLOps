@@ -52,6 +52,23 @@ jobs:
           gcloud components install gke-gcloud-auth-plugin --quiet
           gcloud container clusters get-credentials ${{ env.GKE_CLUSTER }} --zone ${{ env.GKE_ZONE }} --project ${{ env.PROJECT_ID }}
 
+      # ✅ Step 4: Build and push image
+      - name: Build and Push Docker image
+        run: |
+          docker build -t ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.IMAGE }}:latest .
+          docker push ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.IMAGE }}:latest
+
+
+      # ✅ Step 6: Deploy to GKE
+      - name: Deploy updated image
+        run: |
+          kubectl set image deployment/${{ env.DEPLOYMENT_NAME }} ${{ env.CONTAINER_NAME }}=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/iris-api:latest
+          kubectl rollout status deployment/${{ env.DEPLOYMENT_NAME }}
+          kubectl get pods -o wide
+
+      # ✅ Step 7: Verify service
+      - name: Verify service
+        run: kubectl get service ${{ env.SERVICE_NAME }}
       
       # ✅ CML Summary
       - name: Install CML
