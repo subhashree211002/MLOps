@@ -79,8 +79,10 @@ jobs:
       # ✅ Step 7: Verify service
       - name: Verify service
         run: |
-          kubectl get service ${{ env.SERVICE_NAME }} > reoport.md
+          kubectl get service ${{ env.SERVICE_NAME }} > report.md
           kubectl get pods -o wide >> report.md
+          echo "#Deployment running on\n" >> report.md
+          kubectl get service test-service >> report.md
       
       # ✅ CML Summary
       - name: Install CML
@@ -91,27 +93,6 @@ jobs:
         env:
           repo_token: ${{ env.GITHUB_TOKEN }}
         run: |
-          echo "## ✅ This pipeline ran successfully, application deployed to GKE" >> report.md
+          echo "\n\n✅ This pipeline ran successfully, application deployed to GKE" >> report.md
           cml comment create report.md
-
-
-
-
-      # # ✅ Step 4: Build and push image
-      # - name: Build and Push Docker image
-      #   run: |
-      #     docker build -t ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.IMAGE }}:latest .
-      #     docker push ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.IMAGE }}:latest
-
-
-      # # ✅ Step 6: Deploy to GKE
-      # - name: Deploy updated image
-      #   run: |
-      #     kubectl set image deployment/${{ env.DEPLOYMENT_NAME }} ${{ env.CONTAINER_NAME }}=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/iris-api:latest
-      #     kubectl rollout status deployment/${{ env.DEPLOYMENT_NAME }}
-      #     kubectl get pods -o wide
-
-      # # ✅ Step 7: Verify service
-      # - name: Verify service
-      #   run: kubectl get service ${{ env.SERVICE_NAME }}
 
