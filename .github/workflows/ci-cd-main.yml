@@ -62,7 +62,7 @@ jobs:
       # ✅ Step 6: Deploy to GKE
       - name: Deploy updated image
         run: |
-          kubectl set image deployment/${{ env.DEPLOYMENT_NAME }} ${{ env.CONTAINER_NAME }}=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.IMAGE }}:latest
+          kubectl apply -f k8s/
           kubectl rollout status deployment/${{ env.DEPLOYMENT_NAME }}
           kubectl get pods -o wide
 
