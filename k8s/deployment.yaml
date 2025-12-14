@@ -15,7 +15,7 @@ spec:
       serviceAccountName: telemetry-ksa  # See below
       containers:
       - name: test-container
-        image: us-east1-docker.pkg.dev/PROJECT_ID/REPO_NAME/test-api:latest
+        image: us-east1-docker.pkg.dev/mlops-ga-474200/oppe-test-repo/test-api:latest
         ports:
         - containerPort: 8200
         readinessProbe:
