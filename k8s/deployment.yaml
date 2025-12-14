@@ -1,20 +1,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: demo-log-ml-service
+  name: test-deployment
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: demo-log-ml-service
+      app: test-api
   template:
     metadata:
       labels:
-        app: demo-log-ml-service
+        app: test-api
     spec:
       serviceAccountName: telemetry-access  # See below
       containers:
-      - name: fastapi-container
+      - name: test-container
         image: us-central1-docker.pkg.dev/dulcet-bastion-452612-v4/my-repo/demo_log:latest
         ports:
         - containerPort: 8200
