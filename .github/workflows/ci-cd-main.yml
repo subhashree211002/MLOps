@@ -13,11 +13,11 @@ env:
   GKE_CLUSTER: ${{ secrets.GKE_CLUSTER }}
   GKE_ZONE: ${{ secrets.GKE_ZONE }}
   REPO_NAME: ${{ secrets.REPO_NAME }}
-  IMAGE: iris-api
+  IMAGE: test-api
   REGION: us-east1
-  DEPLOYMENT_NAME: iris-deployment
-  SERVICE_NAME: iris-service
-  CONTAINER_NAME: iris-container
+  DEPLOYMENT_NAME: test-deployment
+  SERVICE_NAME: test-service
+  CONTAINER_NAME: test-container
 
 permissions:
   contents: write
